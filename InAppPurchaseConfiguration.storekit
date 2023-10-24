@@ -1,0 +1,104 @@
+{
+  "identifier" : "9B4D1F9A",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6465989639",
+    "_developerTeamID" : "XHR46HKQXD",
+    "_lastSynchronizedDate" : 718704452.91947103
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "21387040",
+      "localizations" : [
+
+      ],
+      "name" : "Apex Mentality",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "60.99",
+          "familyShareable" : false,
+          "groupNumber" : 2,
+          "internalID" : "6466175682",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "HalfYearlySubscription",
+              "displayName" : "Apex Mentality",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.test.halfyearly",
+          "recurringSubscriptionPeriod" : "P6M",
+          "referenceName" : "HalfYearlySubscription",
+          "subscriptionGroupID" : "21387040",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "12.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6465991828",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Access to all premium features",
+              "displayName" : "Monthly premium access",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.test.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly Premium access",
+          "subscriptionGroupID" : "21387040",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "100.99",
+          "familyShareable" : false,
+          "groupNumber" : 3,
+          "internalID" : "6466175805",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "YearlyPremiumSubscription",
+              "displayName" : "Apex Mentality",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.test.yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "YearlyPremiumSubscription",
+          "subscriptionGroupID" : "21387040",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 2,
+    "minor" : 0
+  }
+}
