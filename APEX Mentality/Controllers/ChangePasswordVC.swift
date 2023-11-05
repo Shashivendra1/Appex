@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import MBProgressHUD
 
 class ChangePasswordVC: UIViewController {
     
@@ -43,9 +44,14 @@ class ChangePasswordVC: UIViewController {
         self.profileName.text = userName
         self.profileMailId.text = userMailId
         let profileImg = UserDefaults.standard.getProfile()
-        if profileImg != nil
-        {
-            self.ProfileImg.kf.setImage(with: URL(string: profileImg!))
+       
+        if profileImg != nil {
+            
+            if profileImg == "" {
+                self.ProfileImg.image = UIImage(named: "empty_image")
+            }else{
+                self.ProfileImg.kf.setImage(with: URL(string: profileImg!))
+            }
         }
     self.tabBarController?.tabBar.isHidden = true
     }
@@ -95,14 +101,14 @@ class ChangePasswordVC: UIViewController {
     
      func sendRequestForChangePassword(request: ChangePasswordRequest){
                 DispatchQueue.main.async {
-                showLoading()
+                self.showLoader()
             }
             
             let profileResource = ProfileResource()
             profileResource.changePassword(request: request) { (response) in
                     if response.success == "true"{
                     DispatchQueue.main.async {
-                        hideLoading()
+                        self.hideLoader()
                         self.oldPasswordTxt.text = ""
                         self.newPassswordTxt.text = ""
                         self.confirmPasswordTxt.text = ""
@@ -112,14 +118,14 @@ class ChangePasswordVC: UIViewController {
                     }
                 }else{
                     DispatchQueue.main.async {
-                        hideLoading()
+                        self.hideLoader()
                         self.makeToast(response.message)
                     }
             }
                 
             } onError: { (error) in
                 DispatchQueue.main.async {
-                    hideLoading()
+                    self.hideLoader()
                     self.makeToast(error.localizedDescription)
                 }
             }
@@ -127,5 +133,13 @@ class ChangePasswordVC: UIViewController {
         }
     
     
+    func showLoader() {
+        let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+        hud.label.text = "Loading..."
+    }
+    // Hide the loader
+    func hideLoader() {
+        MBProgressHUD.hide(for: self.view, animated: true)
+    }
     
 }

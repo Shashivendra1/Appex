@@ -80,10 +80,15 @@ class EditProfileVC: UIViewController , UIImagePickerControllerDelegate, UINavig
         self.phoneNoTxt.text = phoneNo
         
         let profileImg = UserDefaults.standard.getProfile()
-        if profileImg != nil
-        {
-            self.ProfileImg.kf.setImage(with: URL(string: profileImg!))
+        if profileImg != nil {
+            
+            if profileImg == "" {
+                self.ProfileImg.image = UIImage(named: "empty_image")
+            }else{
+                self.ProfileImg.kf.setImage(with: URL(string: profileImg!))
+            }
         }
+        
         self.tabBarController?.tabBar.isHidden = true
     }    
     @IBAction func onClickBack(_ sender: Any) {
@@ -122,7 +127,7 @@ class EditProfileVC: UIViewController , UIImagePickerControllerDelegate, UINavig
     
     func updateProfileRequest(){
         DispatchQueue.main.async {
-            showLoading()
+            self.showLoader()
         }
         
         guard let userID = UserDefaults.standard.getUserID() else { return }
@@ -211,6 +216,18 @@ class EditProfileVC: UIViewController , UIImagePickerControllerDelegate, UINavig
         }
         
     }
+    
+    func showLoader() {
+        let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+        hud.label.text = "Loading..."
+    }
+    // Hide the loader
+    func hideLoader() {
+        MBProgressHUD.hide(for: self.view, animated: true)
+    }
+
+    
+    
     
     func generateBoundaryString() -> String
     {
@@ -446,19 +463,6 @@ class EditProfileVC: UIViewController , UIImagePickerControllerDelegate, UINavig
 //            hideLoading()
         }
     }
-    
-    
-    
-    func showLoader() {
-        let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
-        hud.label.text = "Loading..."
-    }
-    // Hide the loader
-    func hideLoader() {
-        MBProgressHUD.hide(for: self.view, animated: true)
-    }
-
-    
     
     
 //    func uploadProfileImageServerData(_ image:String){

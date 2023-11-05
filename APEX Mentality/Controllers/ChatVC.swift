@@ -55,12 +55,18 @@ class ChatVC: UIViewController {
     var comingFrom = ""
     var toIDcomingFrom = ""
     var userName1 = ""
+    var userImage1 = ""
     var userType = ""
     var userID = ""
-    
+    var scrollTableToBottom = false
+
+    @IBOutlet weak var textFieldBottomConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+       
+        registerKeyboardNotifications()
+        
         self.messageChatView.layer.cornerRadius = 10
         
         self.tabBarController?.tabBar.isHidden = true
@@ -76,8 +82,31 @@ class ChatVC: UIViewController {
         self.messageView.layer.shadowPath = shadowPath.cgPath
         //        hideKeyboardWhenTappedAround()
         
-        addNotificationObserver()
+       // addNotificationObserver()
         messageTxtView.delegate = self
+        
+
+        
+        if userProfilePicUrl != ""
+        {
+            self.userProfilePicImgView.kf.setImage(with: URL(string: userProfilePicUrl))
+            
+            if let url = URL(string: userProfilePicUrl) {
+                userProfilePicBtn.kf.setImage(with: url, for: .normal)
+                
+            }
+
+        }
+
+    }
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        IQKeyboardManager.shared().isEnabled = false
+        
+        navigationController?.navigationBar.isHidden = true
         
         if comingFrom == "coachMessageVC"{
             if userName1 == ""{
@@ -99,44 +128,14 @@ class ChatVC: UIViewController {
             }
         }
         
-        if userProfilePicUrl != ""
-        {
-            self.userProfilePicImgView.kf.setImage(with: URL(string: userProfilePicUrl))
-            
-            if let url = URL(string: userProfilePicUrl) {
-                userProfilePicBtn.kf.setImage(with: url, for: .normal)
-                
-            }
-            
-            //setImage(URL(string: userProfilePicUrl), for: .normal)
-            
-            
-            //            self.userProfilePicImgView.sd_setImage(with: URL(string: FILE_BASE_URL + "/\(userProfilePicUrl)"), placeholderImage: UIImage(named: "avatar"))
-            
-            //            self.userProfilePicBtn.sd_setImage(with: URL(string: FILE_BASE_URL + "/\(userProfilePicUrl)"), for: .normal, placeholderImage: UIImage(named: "avatar"))
-        }
-        
-        //        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-        //            self.chatTableView.reloadData()
-        //        }
-        //        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-        //            //Reload with delay
-        //            self.chatTableView.reloadData()
-        //            //Again reload with delay
-        //            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-        //            self.chatTableView.reloadData()
-        //            }
-        //        }
-    }
-    
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
         getConversationId()
-        self.getUserFCmKey()
+        //self.getUserFCmKey()
         
     }
  
+    override func viewDidDisappear(_ animated: Bool) {
+        IQKeyboardManager.shared().isEnabled = true
+        }
 
  
     func getUserFCmKey() {
@@ -253,11 +252,15 @@ class ChatVC: UIViewController {
         }
     }
     
+    
     func getMessages(){
+        
+        NotificationCenter.default.post(name: Notification.Name("ScrollTableToBottom"), object: nil)
+        
         chatViewModel.getMessages(conversationId: self.conversationId) { (messages) in
             self.messages = messages
             //            print(self.messages)
-            NotificationCenter.default.post(name: NSNotification.Name(NotificationKeys.MESSAGE), object: nil)
+         //   NotificationCenter.default.post(name: NSNotification.Name(NotificationKeys.MESSAGE), object: nil)
             DispatchQueue.main.async {
                 self.chatTableView.reloadData()
                 print("Scroll to bottom in chat vc")
@@ -281,7 +284,8 @@ class ChatVC: UIViewController {
             return
         }
 
-        let username = UserDefaults.standard.getUserName()
+        let username = userName1//UserDefaults.standard.getUserName()
+        let userImage = userImage1//UserDefaults.standard.getUserName()
         let userId = UserDefaults.standard.getUserID()
         
         if userType == "chat" {
@@ -294,7 +298,7 @@ class ChatVC: UIViewController {
         let isRead = false
         let type = "text"
         //        self.sendNotification(message: messageTxtView.text!, image: "")
-        let request = Message(content: message, fromID: userId, timestamp: "\(timestamp)", isRead: isRead, toID: toId, type: type, queryId: "",name: username)
+        let request = Message(content: message, fromID: userId, timestamp: "\(timestamp)", isRead: isRead, toID: toId, type: type, queryId: "",name: username,image: userImage)
         
         chatViewModel.sendMessage(request: request) { (conversationId) in
             if self.conversationId == nil{
@@ -386,6 +390,9 @@ extension ChatVC: UITableViewDelegate, UITableViewDataSource{
         }
         
     }
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableView.automaticDimension
+    }
     
     //    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     //        let message = messages[indexPath.row]
@@ -399,4 +406,44 @@ extension ChatVC: UITableViewDelegate, UITableViewDataSource{
     //        }
     //
     //    }
+    
+    func registerKeyboardNotifications(){
+           NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+           NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+       }
+    
+//    deinit {
+//
+//            NotificationCenter.default.removeObserver(self, name: Notification.Name("ScrollTableToBottom"),object: nil)
+//        }
+//
+    @objc func keyboardWillHide(_ notification: Notification) {
+        if let _: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+      
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.textFieldBottomConstraint.constant = 20
+            }
+            
+        }
+    }
+}
+
+
+
+extension ChatVC{
+    @objc func keyboardWillShow(_ notification: Notification) {
+        if let keyboardFrame: NSValue = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue {
+            
+            let keyboardRectangle = keyboardFrame.cgRectValue
+            let keyboardHeight = keyboardRectangle.height
+            
+            UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveEaseOut, animations: {
+                self.view.layoutIfNeeded()
+            }, completion: { finished in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    self.textFieldBottomConstraint.constant = keyboardHeight //keyboardHeight + 20 
+                }
+            })
+        }
+    }
 }

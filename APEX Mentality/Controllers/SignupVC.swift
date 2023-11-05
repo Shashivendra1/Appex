@@ -7,6 +7,7 @@
 
 import UIKit
 import FLAnimatedImage
+import MBProgressHUD
 class SignupVC: UIViewController {
 
     @IBOutlet weak var gifImage: FLAnimatedImageView!
@@ -96,12 +97,13 @@ class SignupVC: UIViewController {
     
     func sendSignUpRequestToServer(request: SignUpRequest){
           DispatchQueue.main.async {
-          showLoading()
+            self.showLoader()
       }
       let signupResource = SignUpResource()
       signupResource.signUp(request: request) { (response) in
           if response.success == "true"{
               DispatchQueue.main.async {
+                  self.hideLoader()
                   let vc = self.storyboard?.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
                   self.makeToast("Signup Successfully")
                   self.navigationController?.pushViewController(vc, animated: true)
@@ -111,24 +113,36 @@ class SignupVC: UIViewController {
 //                  UserDefaults.standard.saveUserName(userName: (response.data?.name)!)
                   UIApplication.shared.windows.first?.rootViewController = vc
                   UIApplication.shared.windows.first?.makeKeyAndVisible()
-                  hideLoading()
-                  
+                 
                   self.present(vc, animated: true, completion: nil)
               }
           }else{
               DispatchQueue.main.async {
-                  hideLoading()
+                  self.hideLoader()
                   self.makeToast(response.message!)
               }
           }
       } onError: { (error) in
           DispatchQueue.main.async {
-              hideLoading()
+              self.hideLoader()
               self.makeToast(error.localizedDescription)
           }
       }
   }
    
+    func showLoader() {
+        let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+        hud.label.text = "Loading..."
+    }
+    // Hide the loader
+    func hideLoader() {
+        MBProgressHUD.hide(for: self.view, animated: true)
+    }
+
+    
+    
+    
+    
     func hideKeyboardWhenTappedAround() {
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tap.cancelsTouchesInView = false

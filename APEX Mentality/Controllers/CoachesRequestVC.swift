@@ -8,6 +8,11 @@
 import UIKit
 import Kingfisher
 import Toast_Swift
+import MBProgressHUD
+
+import FirebaseAuth
+import FirebaseDatabase
+
 class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var chatTableView: UITableView!
@@ -17,7 +22,6 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     
     @IBOutlet weak var coachesListView: UIView!
     @IBOutlet weak var chatListView: UIView!
-    
     @IBOutlet weak var segmentView: UISegmentedControl!
     
     var selectedIndex = 0
@@ -46,6 +50,8 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     
     override func viewDidLoad() {
         super.viewDidLoad()
+      
+        
         navigationController?.interactivePopGestureRecognizer?.isEnabled = false
         
         coachesActive = true
@@ -55,6 +61,10 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         self.navigationController?.navigationBar.isHidden = true
         
         NotificationCenter.default.addObserver(self, selector: #selector(SubscriptionPurchased), name: NSNotification.Name(rawValue: "SubscriptionPurchased"), object: nil)
+        
+//        if selectedSegmentIndex == 1 {
+//            getChatUserList()
+//        }
         
     }
     
@@ -71,8 +81,6 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
 
         //    subscriptionApi()
 
-           
-  print("update Profile success")
             }
 
         }
@@ -91,36 +99,28 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         }else {
             coachesActive = false
             chatActive = true
-            getUsersList()
+          //  getUsersList()
+            getChatUserList()
             
         }
-        
-        
-        
+
         segmentView.selectedSegmentIndex = selectedSegmentIndex
         
     }
 
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        self.tabBarController?.tabBar.isHidden = true
+    func showLoader() {
+        let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+        hud.label.text = "Loading..."
     }
-    
+    // Hide the loader
+    func hideLoader() {
+        MBProgressHUD.hide(for: self.view, animated: true)
+    }
+
 
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        //        if segmentView.selectedSegmentIndex == 0
-        //        {
-        //        return coachList.count
-        //        }
-        //        else
-        //        {
-        //        return chatUsersList.count
-        ////            return 2
-        //        }
-        
-        
+ 
         if selectedIndex == 0 {
             return coachList.count
         }
@@ -139,13 +139,17 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
             let info = self.coachList[indexPath.row]
             if info.profilePic != "" {
                 cell.cellImg.kf.setImage(with: URL(string:info.profilePic))
-            }
-            if info.request != "" {
-                cell.sendRequestOutlet.setTitle(info.request, for: .normal)
             }else{
-                cell.sendRequestOutlet.setTitle("Send Request", for: .normal)
+                cell.cellImg.image = UIImage(named: "empty_image")
             }
-            
+           
+//            if info.request != "" {
+//                cell.sendRequestOutlet.setTitle(info.request, for: .normal)
+//            }else{
+//                cell.sendRequestOutlet.setTitle("Send Request", for: .normal)
+//            }
+            cell.sendRequestOutlet.isHidden = false
+            cell.sendRequestOutlet.setTitle("Send Request", for: .normal)
             cell.sendRequestOutlet.tag = indexPath.row
             cell.sendRequestOutlet.addTarget(self, action: #selector(sendRequestBtnClicked(sender:)), for: .touchUpInside)
             cell.requestNameLbl.text = info.name
@@ -157,59 +161,41 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
             
             
             let info = self.chatUsersList[indexPath.row]
+            print(info)
             cell.requestNameLbl.text = info.name
-            if info.image != ""
-            {
+            if info.image != "" {
                 cell.cellImg.kf.setImage(with: URL(string:info.image ?? ""   ))
+                
+            }else{
+                cell.cellImg.image = UIImage(named: "empty_image")
             }
-
-            //let timeStamp = Date(timeIntervalSince1970:(TimeInterval(info.time!)!) / 1000)
-           // cell.sendRequestLbl.text = timeStamp.convertTimeInterval()
+            
+            if info.lastMessage != ""{
+                if info.timestamp != nil {
+                    cell.sendRequestLbl.isHidden = false
+                    if info.timestamp?.count != 10 {
+                        let timeStamp = Date(timeIntervalSince1970: TimeInterval(info.timestamp!)! / 1000)
+                        
+                        cell.sendRequestLbl.text = timeStamp.convertTimeInterval()
+                        
+                        //self.lblDate.text = timeStamp.convertTimeInterval(format: "MMM d, yyyy")
+                        
+                    }else{
+                        let timeStamp = Date(timeIntervalSince1970: TimeInterval(info.timestamp!)!)
+                        
+                        cell.sendRequestLbl.text = timeStamp.convertTimeInterval()
+                        // self.lblDate.text = timeStamp.convertTimeInterval(format: "MMM d, yyyy")
+                    }
+                }
+                else{
+                    cell.sendRequestLbl.isHidden = true
+                }
+            }else{
+                cell.sendRequestLbl.isHidden = true
+            }
             cell.messageLbl.text = info.lastMessage
         }
-        /*
-         switch segmentView.selectedSegmentIndex{
-         case 0:
-         let info = self.coachList[indexPath.row]
-         print(info)
-         if info.profilePic != "" {
-         cell.cellImg.kf.setImage(with: URL(string:info.profilePic))
-         }
-         if info.request != "" {
-         cell.sendRequestOutlet.setTitle(info.request, for: .normal)
-         }else{
-         cell.sendRequestOutlet.setTitle("Send Request", for: .normal)
-         }
-         
-         cell.sendRequestOutlet.tag = indexPath.row
-         cell.sendRequestOutlet.addTarget(self, action: #selector(sendRequestBtnClicked(sender:)), for: .touchUpInside)
-         cell.requestNameLbl.text = info.name
-         cell.messageLbl.text = info.designation
-         break
-         case 1:
-         cell.sendRequestOutlet.isHidden = true
-         //            let chatInfo = self.chatUsersList[indexPath.row]
-         //            cell.messageLbl.text = chatInfo.lastMessage
-         //            cell.sendRequestLbl.text = chatInfo.timestamp
-         //            cell.requestNameLbl.text = chatInfo.name
-         
-         let info = self.chatUsersList[indexPath.row]
-         cell.requestNameLbl.text = info.name
-         if info.image != ""
-         {
-         cell.cellImg.kf.setImage(with: URL(string:info.image ?? ""   ))
-         print(info.image)
-         }
-         
-         let timeStamp = Date(timeIntervalSince1970:     (TimeInterval(info.timestamp!)!) / 1000)
-         cell.sendRequestLbl.text = timeStamp.convertTimeInterval()
-         cell.messageLbl.text = info.lastMessage
-         
-         default:
-         break
-         cell
-         }
-         */
+
         return cell
     }
     
@@ -221,9 +207,9 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
             let vc = self.storyboard?.instantiateViewController(withIdentifier: "ChatVC") as! ChatVC
             let info = self.chatUsersList[indexPath.row]
             vc.userName1 = info.name ?? ""
+            vc.userImage1 = info.image ?? ""
             vc.userType = "chat"
             vc.userID = info.uid ?? ""
-            
             
             self.navigationController?.pushViewController(vc, animated: true)
             
@@ -249,7 +235,8 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         case 1:
             self.selectedIndex = 1
             coachList.removeAll()
-            getUsersList()
+          //  getUsersList()
+            getChatUserList()
         default:
             return
         }
@@ -283,10 +270,10 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         }
     }
     @IBAction func onClickChat(_ sender: Any) {
-        
-        if chatActive {
+            if chatActive {
             chatActive = true
-            getUsersList()
+           // getUsersList()
+                getChatUserList()
             chatLbl.textColor = UIColor.white
             chatLbl.backgroundColor = UIColor(red: 1/255, green: 1/255, blue: 1/255, alpha: 1)
             
@@ -309,6 +296,12 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     // coachList Api
     func coachListApi()
     {
+         showLoader()
+//        showLoading()
+//        DispatchQueue.main.async {
+//        showLoading()
+//        }
+        
         let userId =    UserDefaults.standard.getUserID()
         let urlStr = "https://chawtechsolutions.co.in/dev/apex/api/get_coache_list.php"
         let parameters = ["user_id": userId   ]
@@ -326,10 +319,10 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
             if error == nil && data != nil && data?.count != 0{
                 
-                print(String(data: data!, encoding: .utf8)!)
+                //print(String(data: data!, encoding: .utf8)!)
                 let jsonDecoder = JSONDecoder()
                 let response = response as! HTTPURLResponse
-                print(response.statusCode)
+               // print(response.statusCode)
                 
                 let statusCode = response.statusCode
                 do {
@@ -338,50 +331,60 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
                     self.coachList.removeAll()
                     if result.status == "success"
                     {
+                        
                         self.coachList = result.data
                         print(self.coachListDict.count)
                         DispatchQueue.main.async {
+                            self.hideLoader()
+//                            hideLoading()
                             self.tableView.reloadData()
                         }
                     }else{
-                        
                         DispatchQueue.main.async {
+                            self.hideLoader()
                             self.coachList.removeAll()
                             self.makeToast("No Coach Found.")
                             self.tableView.reloadData()
                         }
                     }
-                    //completion(.success(result))
+                   
                 } catch let error {
-                    
-                    
-                    DispatchQueue.main.async {
+                      DispatchQueue.main.async {
+                        self.hideLoader()
                         self.coachList.removeAll()
                         self.makeToast("No Coach Found.")
                         self.tableView.reloadData()
                     }
                 }
             }else{
+                DispatchQueue.main.async {
+                    self.hideLoader()
+                    self.tableView.reloadData()
+                }
+             
                 self.makeToast("No Coach Found.")
                 let error = error as NSError?
             }
-            
         }.resume()
     }
     
     //  ChatUserListData
-    
     func getUsersList(){
-        
         chatViewModel.getUsersList { (usersList) in
             self.chatUsersList = usersList
             print(self.chatUsersList)
             DispatchQueue.main.async {
                 if self.chatUsersList.count > 0 {
                     
+                    
                     self.tableView.dataSource = self
                     self.tableView.delegate = self
-                    self.tableView.reloadData()
+                    
+                    DispatchQueue.main.async {
+                  
+                        self.chatUsersList = self.sortUsersListByTime(usersArray: self.chatUsersList)
+                        self.tableView.reloadData()
+                    }
                 } else {
                     self.tableView.dataSource = self
                     self.tableView.delegate = self
@@ -389,12 +392,107 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
                 }
                 
             }
-            
         } onError: { (errorMessage) in
             print(errorMessage)
         }
     }
     
+    
+    func getChatUserList() {
+        var users = [FirebaseUser]()
+        var clientType = ""
+    
+        let fdbRef = Database.database().reference()
+        guard let userId = UserDefaults.standard.getUserID() else { return  }
+        
+        let userType = UserDefaults.standard.getUserRole()
+        
+        if userType?.lowercased() == "client"{
+            clientType = "asignCoach"
+        }else{
+            clientType = "users"
+        }
+        //fdbRef.child("users").child(userId).observeSingleEvent(of:.value) { snapshot,data in
+        fdbRef.child(clientType).child(userId).observe( .value) { (snapshot) in
+
+            if snapshot.exists(){
+                print(snapshot)
+                var fcm_key = ""
+                var email = ""
+                var name = ""
+                if let dict = snapshot.value as? NSDictionary, let postContent = dict["fcmKey"] as? String {
+                    fcm_key = postContent
+                } else {
+
+                }
+                if let dict = snapshot.value as? NSDictionary, let postContent = dict["email"] as? String {
+                    email = postContent
+                } else {
+
+                }
+                if let dict = snapshot.value as? NSDictionary, let postContent = dict["userName"] as? String {
+                    name = postContent
+            } else {
+
+           }
+             let enumrator = snapshot.children
+                while let snap = enumrator.nextObject() as? DataSnapshot{
+                    if let userDict = snap.value as? [String: AnyObject] {
+                       // print(userDict)
+                        self.chatUsersList.removeAll()
+                        for (key, value) in userDict {
+                            print("key is - \(key) and value is - \(value)")
+                            let metaData = value["metaData"] as? NSMutableDictionary
+                            let user = metaData?["user"] as? NSMutableDictionary
+                            let vendor = metaData?["name"] as? NSMutableDictionary
+                            if key != "adminapex444"{
+                    
+                             //   let userInstance = FirebaseUser(uid: key, email: email, lastMessage: value["lastMessage"] as? String, name: user?["name"] as? String, image: value["image"] as? String, fcmKey: fcm_key, timestamp: value["timestamp"] as? String, time: value["time"] as? String)
+                                
+                                let userInstance = FirebaseUser(uid: key, email: email, lastMessage: value["lastMessage"] as? String, name: user?["name"] as? String, image: value["image"] as? String, fcmKey: fcm_key, timestamp: value["timestamp"] as? String, time: value["time"] as? String)
+                                self.chatUsersList.append(userInstance)
+                            }
+                        } // End for loop
+                        print(self.chatUsersList)
+                        
+                    }
+                }
+                DispatchQueue.main.async {
+              
+                    self.chatUsersList = self.sortUsersListByTime(usersArray: self.chatUsersList)
+                   
+                    self.tableView.reloadData()
+                }
+//                if self.chatUsersList.count != 0 {
+//                    var timeArr = [String]()
+//                    for item in self.chatUsersList {
+//                        if item.timestamp == nil {
+//                            timeArr.append("nil")
+//                        }else{
+//                            timeArr.append(item.timestamp!)
+//                        }
+//                    }
+//                    if timeArr.contains("nil"){
+//                        print("nil nil ")
+//                        self.tableView.reloadData()
+//                    }else{
+//                        print("it have value")
+//                        self.chatUsersList =  self.chatUsersList.sorted{$0.timestamp! > $1.timestamp!} // Sorting messages according to date
+//                        self.tableView.reloadData()
+//
+//                    }
+//
+//                }else{
+//                    print(" no dattaa")
+//                    self.tableView.reloadData()
+//                }
+               
+            }else{
+                print(" no dattaa")
+                self.tableView.reloadData()
+            }
+        }
+    }
     
     @objc func sendRequestBtnClicked(sender:UIButton)
     {
@@ -438,8 +536,12 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
                     print(result)
                     if result.status == "success"
                     {
-                        
-                        coachListApi()
+                        DispatchQueue.main.async {
+                            
+                            self.makeToast("Request sent successfully.")
+                            coachListApi()
+                        }
+                       
                         //print(self.sendRequestMsg)
                         //self.sendRequestList = result.data
                         //self.sendRequestMsg = result.message ?? ""
@@ -474,7 +576,6 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
     }
     
     
-    
     @objc  func showToast(message : String, font: UIFont) {
         let toastLabel = UILabel(frame: CGRect(x: self.view.frame.size.width/2 - 75, y: self.view.frame.size.height-100, width: 150, height: 35))
         toastLabel.backgroundColor = UIColor.black.withAlphaComponent(0.6)
@@ -493,6 +594,24 @@ class CoachesRequestVC: UIViewController, UITableViewDelegate, UITableViewDataSo
         })
     }
     
+    func sortUsersListByTime(usersArray: [FirebaseUser]) -> [FirebaseUser]{
+        
+        var arrayWithTimeStamp = [FirebaseUser]()
+        var arrayWithoutTimeStap = [FirebaseUser]()
+        
+        usersArray.forEach { (user) in
+            if user.timestamp == nil{
+                arrayWithoutTimeStap.append(user)
+            }else{
+                arrayWithTimeStamp.append(user)
+            }
+        }
+        
+        arrayWithTimeStamp = arrayWithTimeStamp.sorted(by: { $0.timestamp! > $1.timestamp! })
+        let newArray = arrayWithTimeStamp + arrayWithoutTimeStap
+        return newArray
+        
+    }
 }
 
 

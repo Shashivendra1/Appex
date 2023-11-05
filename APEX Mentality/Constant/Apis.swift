@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 let LTY_AppDelegate = UIApplication.shared.delegate as! AppDelegate
-var showSubscription = false
+
 
 struct APIs {
     static let BASE_URL = "https://chawtechsolutions.co.in/dev/apex/api/"

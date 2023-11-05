@@ -28,24 +28,22 @@ class ReceiverCell: UITableViewCell {
         var message: Message?{
         didSet{
         guard let message = self.message else { return }
-        if message.timestamp != nil {
-           // print(message.timestamp)
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-            if let date = dateFormatter.date(from: message.timestamp ?? "") {
-               // self.lblTime.text = date.convertTimeInterval()
-              //  self.lblDate.text = date.convertTimeInterval(format: "MMM d, yyyy")
-              //  print(date)
-            } else {
-                print("Error: Unable to convert timestamp to Date")
+            if message.timestamp != nil {
+                
+                if message.timestamp?.count != 10 {
+                    let timeStamp = Date(timeIntervalSince1970: TimeInterval(message.timestamp!)! / 1000)
+                    
+                    self.lblTime.text = timeStamp.convertTimeInterval()
+                    self.lblDate.text = timeStamp.convertTimeInterval(format: "MMM d, yyyy")
+                    
+                }else{
+                    let timeStamp = Date(timeIntervalSince1970: TimeInterval(message.timestamp!)!)
+                    
+                    self.lblTime.text = timeStamp.convertTimeInterval()
+                    self.lblDate.text = timeStamp.convertTimeInterval(format: "MMM d, yyyy")
+                }
+                self.lblMessage.text = message.content
             }
-            
-//            let timeStamp = Date(timeIntervalSince1970: TimeInterval(message.timestamp!)! / 1000)
-//            self.lblTime.text = timeStamp.convertTimeInterval()
-//            self.lblDate.text = timeStamp.convertTimeInterval(format: "MMM d, yyyy")
-            }
-            self.lblMessage.text = message.content
-            
         }
     }
     

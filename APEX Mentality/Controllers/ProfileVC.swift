@@ -9,7 +9,7 @@
 import UIKit
 import ImageIO
 import Kingfisher
-
+import MBProgressHUD
 
 class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
     var userProfileData: ProfileData?
@@ -83,7 +83,7 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
                 )
       
         
-        self.tabBarController?.tabBar.isHidden = false
+//        self.tabBarController?.tabBar.isHidden = false
         let userName = UserDefaults.standard.getUserName()
         self.nameLbl.text = userName
 //      self.profileName.text = userName
@@ -93,7 +93,8 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
 
         profileImg.clipsToBounds = true
         profileImg.cornerRadius = 60
-//        profileImg.layer.borderColor = UIColor(red: 229/255, green: 193/255, blue: 3/255, alpha: 1).cgColor
+        
+        profileImg.layer.borderColor = UIColor(red: 229/255, green: 193/255, blue: 3/255, alpha: 1).cgColor
         profileImg.layer.borderWidth = 5
       
         nameLbl.text = ""
@@ -123,6 +124,7 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
     }
 
     override func viewWillAppear(_ animated: Bool) {
+        self.tabBarController?.tabBar.isHidden = false
         let userName = UserDefaults.standard.getUserName()
         self.nameLbl.text = userName
 //       self.profileName.text = userName
@@ -134,7 +136,7 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
         if profileImg != nil
         {
             self.profileImg.kf.setImage(with: URL(string: profileImg!), placeholder:UIImage(named:"empty_image"))
-            self.tabBarController?.tabBar.isHidden = false
+            
         }else {
             self.profileImg.kf.setImage(with: URL(string: profileImg!), placeholder:UIImage(named:"empty_image"))
             print("no image")
@@ -142,6 +144,7 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
         }
     }
     
+   
     
     
     @IBAction func onClickCameraIcon(_ sender: Any) {
@@ -222,7 +225,6 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
     @IBAction func onClickNotification(_ sender: Any) {
         let vc = self.storyboard?.instantiateViewController(withIdentifier: "NotificationVC") as! NotificationVC
         self.navigationController?.pushViewController(vc, animated: true)
-        print("bgcrffgiujcrsrtr7y")
     }
 
       @IBAction func onClickLogout(_ sender: Any) {
@@ -244,29 +246,44 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
         }))
 
         refreshAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction!) in
+            DispatchQueue.main.async {
+                self.hideLoader()
+            }
          
           }))
         present(refreshAlert, animated: true, completion: nil)
     }
     
-    
     func showAlert(){
+        DispatchQueue.main.async {
+            self.showLoader()
+        }
+        
         let alert = UIAlertController(title: "Apex Mentality ", message: "Are you sure you want to LogOut ?", preferredStyle: UIAlertController.Style.alert)
         alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { (action: UIAlertAction!) in
+            
+            DispatchQueue.main.async {
+                self.hideLoader()
+            }
             print("Handle Ok logic here")
             UserDefaults.standard.removeObject(forKey:"LOGGED_IN")
             let userId = UserDefaults.standard.getUserID()
+          
             let userEmailId = UserDefaults.standard.getEmail()
             UserDefaults.standard.removeObject(forKey: userId ?? "")
             UserDefaults.standard.removeObject(forKey: userEmailId ?? "")
-            UserDefaults.standard.removeObject(forKey: "userRole")
+            UserDefaults.standard.saveUserRole(userRole:"1")
+            //UserDefaults.standard.removeObject(forKey: "userRole")
             guard let window = UIApplication.shared.keyWindow else {
                 return
             }
-            showSubscription = true
+          
             self.setupAppropriateScreen()
         }))
         alert.addAction(UIAlertAction(title: "No", style: .cancel, handler: { (action: UIAlertAction!) in
+            DispatchQueue.main.async {
+                self.hideLoader()
+            }
             print("Handle Cancel Logic here")
         }))
         present(alert, animated: true, completion: nil)
@@ -276,6 +293,9 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
 //DeleteApi
     func deleteAccount()
     {
+//        DispatchQueue.main.async {
+//        self.showLoader()
+//        }
         let apiCall = JsonApi()
         let gmail =  UserDefaults.standard.getEmail()
         let userName = UserDefaults.standard.getUserName()
@@ -297,36 +317,61 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
             UserDefaults.standard.removeObject(forKey:"LOGGED_IN")
             UserDefaults.standard.removeObject(forKey: "user_id")
             UserDefaults.standard.removeObject(forKey: "email")
-
-            guard let window =
-                UIApplication.shared.keyWindow else {
-                return
-            }
+                     
+            let userId = UserDefaults.standard.getUserID()
+            let userEmailId = UserDefaults.standard.getEmail()
+            UserDefaults.standard.removeObject(forKey: userId ?? "")
+            UserDefaults.standard.removeObject(forKey: userEmailId ?? "")
+            UserDefaults.standard.saveUserRole(userRole:"1")
+            
+            //UserDefaults.standard.removeObject(forKey: "userRole")
+            
+//            guard let window =
+//                UIApplication.shared.keyWindow else {
+//                return
+//            }
                 DispatchQueue.main.async {
-            let vc = self.storyboard?.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
-                    self.navigationController?.pushViewController(vc, animated: true)
-//                    self.hideLoader()
-                self.makeToast("User account deleted successfully")
-                window.rootViewController = vc
+                 self.hideLoader()
+                    self.goToWelcomeVC()
+
             }
             
-                let options: UIView.AnimationOptions = .transitionCrossDissolve
-                let duration: TimeInterval = 0.5
-                UIView.transition(with: window, duration: duration, options: options, animations: {}, completion:
-                { completed in
-                    window.makeKeyAndVisible()
-                })
-          //            if success as! String == "true"
-//            {
-//          print (success)
-//            }
-//            else
-//            {
-//    }
+//                let options: UIView.AnimationOptions = .transitionCrossDissolve
+//                let duration: TimeInterval = 0.5
+//                UIView.transition(with: window, duration: duration, options: options, animations: {}, completion:
+//                { completed in
+//                    window.makeKeyAndVisible()
+//                })
+
         }
     }
     
-    
+    func goToWelcomeVC() {
+        let vc = self.storyboard?.instantiateViewController(withIdentifier: "WelcomeLoginScreen") as! WelcomeLoginScreen
+        self.makeToast("Logout successfully")
+        let nc = SwipeableNavigationController(rootViewController: vc)
+        nc.setNavigationBarHidden(true, animated: false)
+        
+        if #available(iOS 13.0, *) {
+            
+            UIApplication.shared.windows.first?.rootViewController = nc
+            UIApplication.shared.windows.first?.makeKeyAndVisible()
+        } else {
+            let bounds = UIScreen.main.bounds
+            LTY_AppDelegate.window = UIWindow(frame: bounds)
+            LTY_AppDelegate.window?.rootViewController = nc
+            LTY_AppDelegate.window?.makeKeyAndVisible()
+        }
+        
+    }
+    func showLoader() {
+        let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+        hud.label.text = "Loading..."
+    }
+    // Hide the loader
+    func hideLoader() {
+        MBProgressHUD.hide(for: self.view, animated: true)
+    }
     
     func setupAppropriateScreen() {
             let vc = self.storyboard?.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
@@ -344,6 +389,18 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
             LTY_AppDelegate.window?.rootViewController = nc
             LTY_AppDelegate.window?.makeKeyAndVisible()
         }
+        
+        
+        func showLoader() {
+            let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+            hud.label.text = "Loading..."
+        }
+        // Hide the loader
+        func hideLoader() {
+            MBProgressHUD.hide(for: self.view, animated: true)
+        }
+        
+
         
     }
     
@@ -415,53 +472,53 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
 
 // Profile Functions
     @objc func getUserProfile(){
-      if UserDefaults.standard.isUserLoggedIn(){
-       guard let userID = UserDefaults.standard.getUserID() else { return }
-
-       let request = ProfileRequest(userID: Int(userID))
-       let profileResource = ProfileResource()
-
-       profileResource.getProfile(request: request) { (response) in
-           DispatchQueue.main.async {
-            self.refresher.endRefreshing()
-           }
-
-           if response.success == "true"{
-               self.userProfileData = response.data
-               self.setProfileData(profileData: response.data!)
-           }else{
-               DispatchQueue.main.async {
-               self.makeToast(response.message!)
-               }
-           }
-       } onError: { (error) in
-           DispatchQueue.main.async {
-               self.refresher.endRefreshing()
-               self.makeToast(error.localizedDescription)
-           }
-       }
-   }
-   else{
-//            self.navigateToLoginViewController()
-    //   UserDefaults.standard.setUserLoggedIn(false)
-       UserDefaults.standard.removeObject(forKey:"LOGGED_IN")
-       UserDefaults.standard.removeObject(forKey: "USER_ID")
-       UserDefaults.standard.removeObject(forKey: "EMAIL")
-
-       guard let window = UIApplication.shared.keyWindow else {
-           return
-       }
-       let vc = self.storyboard?.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
-       self.navigationController?.pushViewController(vc, animated: true)
-           window.rootViewController = vc
-           let options: UIView.AnimationOptions = .transitionCrossDissolve
-           let duration: TimeInterval = 0.5
-           UIView.transition(with: window, duration: duration, options: options, animations: {}, completion:
-           { completed in
-               window.makeKeyAndVisible()
-           })
-   }
+        if UserDefaults.standard.isUserLoggedIn(){
+            guard let userID = UserDefaults.standard.getUserID() else { return }
+            
+            let request = ProfileRequest(userID: Int(userID))
+            let profileResource = ProfileResource()
+            
+            profileResource.getProfile(request: request) { (response) in
+                DispatchQueue.main.async {
+                    self.refresher.endRefreshing()
+                }
+                
+                if response.success == "true"{
+                    self.userProfileData = response.data
+                    self.setProfileData(profileData: response.data!)
+                }else{
+                    DispatchQueue.main.async {
+                        self.makeToast(response.message!)
+                    }
+                }
+            } onError: { (error) in
+                DispatchQueue.main.async {
+                    self.refresher.endRefreshing()
+                    self.makeToast(error.localizedDescription)
+                }
+            }
         }
+        else{
+            //            self.navigateToLoginViewController()
+            //   UserDefaults.standard.setUserLoggedIn(false)
+            UserDefaults.standard.removeObject(forKey:"LOGGED_IN")
+            UserDefaults.standard.removeObject(forKey: "USER_ID")
+            UserDefaults.standard.removeObject(forKey: "EMAIL")
+            
+            guard let window = UIApplication.shared.keyWindow else {
+                return
+            }
+            let vc = self.storyboard?.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
+            self.navigationController?.pushViewController(vc, animated: true)
+            window.rootViewController = vc
+            let options: UIView.AnimationOptions = .transitionCrossDissolve
+            let duration: TimeInterval = 0.5
+            UIView.transition(with: window, duration: duration, options: options, animations: {}, completion:
+                                { completed in
+                window.makeKeyAndVisible()
+            })
+        }
+    }
 
     func setProfileData(profileData: ProfileData){
         DispatchQueue.main.async {
@@ -499,6 +556,9 @@ class ProfileVC: UIViewController,  UIImagePickerControllerDelegate  {
 }
     }
 
+  
+    
+    
     //    Profile api Integration
 //    func setUserProfileDetails(){
 //        if let userProfileData = self.userProfileData{

@@ -72,8 +72,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         //           }
        
     }
+    func switchToWelcomeVC() {
+        let userStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+        let vc = userStoryboard.instantiateViewController(withIdentifier: "WelcomeLoginScreen") as! WelcomeLoginScreen
+
+//        let vc =  userStoryboard.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
+        let navVC = SwipeableNavigationController(rootViewController: vc)
+        navVC.setNavigationBarHidden(true, animated: false)
+        self.window?.rootViewController = navVC
+  
+    }
     func switchToLoginVC() {
         let userStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+
         let vc =  userStoryboard.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
         let navVC = SwipeableNavigationController(rootViewController: vc)
         navVC.setNavigationBarHidden(true, animated: false)
@@ -91,17 +102,33 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
     
-    
+   
     func userLoginType(){
         let userType = UserDefaults.standard.getUserRole()
         print(userType)
         
+        var showSubscription = UserDefaults.standard.value(forKey:"showSubscription")
+        if showSubscription == nil {
+            UserDefaults.standard.set("yes", forKey:"showSubscription")
+            showSubscription = UserDefaults.standard.value(forKey:"showSubscription")
+        }
+        
         if userType == "client" {
-            self.switchToTab()
-        }else if userType == nil {
+            if showSubscription as! String == "no"{
+                self.switchToTab()
+            }else{
+                self.switchToTab()
+            }
+        }
+        else if userType == nil {
+            self.switchToWelcomeVC()
+            
+        } else if userType == "1" {
             self.switchToLoginVC()
+            
         } else{
             self.switchToHomeVC()
+            
         }
     }
 

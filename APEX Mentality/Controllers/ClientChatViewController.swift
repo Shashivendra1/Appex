@@ -140,7 +140,7 @@ class ClientChatViewController: UIViewController {
     func getMessages(){
         chatViewModel.getMessages(conversationId: self.conversationId) { (messages) in
             self.messages = messages
-            NotificationCenter.default.post(name: NSNotification.Name(NotificationKeys.MESSAGE), object: nil)
+            //NotificationCenter.default.post(name: NSNotification.Name(NotificationKeys.MESSAGE), object: nil)
             DispatchQueue.main.async {
                 self.chatTableView.reloadData()
                 print("Scroll to bottom in chat vc")

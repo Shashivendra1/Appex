@@ -9,6 +9,7 @@ import UIKit
 import Firebase
 import FirebaseAuth
 import FirebaseDatabase
+import MBProgressHUD
 
 class CoachNotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSource {
     let chatViewModel = ChatViewModel()
@@ -104,9 +105,22 @@ class CoachNotificationVC: UIViewController , UITableViewDelegate , UITableViewD
         UIApplication.shared.windows.first?.makeKeyAndVisible()
     }
     
+    func showLoader() {
+        let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+        hud.label.text = "Loading..."
+    }
+    // Hide the loader
+    func hideLoader() {
+        MBProgressHUD.hide(for: self.view, animated: true)
+    }
+    
+    
     //  coachNotificationApi
     func coachNotificationListApi()
     {
+        DispatchQueue.main.async {
+        self.showLoader()
+        }
         let userId =    UserDefaults.standard.getUserID()
         let urlStr = "https://chawtechsolutions.co.in/dev/apex/api/coachnotifications.php"
         let parameters = ["couchid": userId ]
@@ -137,12 +151,14 @@ class CoachNotificationVC: UIViewController , UITableViewDelegate , UITableViewD
                         
                         self.coachNotificationList = result.data
                         DispatchQueue.main.async {
+                            self.hideLoader()
                             self.tableView.reloadData()
                             
                         }
                     }else{
                         self.isloading = true
                         DispatchQueue.main.async {
+                            self.hideLoader()
                     self.makeToast(result.message ?? "")
             }
                         
@@ -150,6 +166,7 @@ class CoachNotificationVC: UIViewController , UITableViewDelegate , UITableViewD
                     //completion(.success(result))
                 } catch let error {
                     DispatchQueue.main.async {
+                        self.hideLoader()
                         self.makeToast("Coach is not assign")
                     }
                     
@@ -157,13 +174,16 @@ class CoachNotificationVC: UIViewController , UITableViewDelegate , UITableViewD
                 }
             }else{
                 DispatchQueue.main.async {
+                    self.hideLoader()
                     self.makeToast("Coach is not assign")
                 }
                 
-                let error = error as NSError?
+            let error = error as NSError?
             }
         }.resume()
     }
+    
+    
     
     // coachAcceptApi
     @objc func approveStatusBtnClicked(sender:UIButton)
@@ -174,7 +194,9 @@ class CoachNotificationVC: UIViewController , UITableViewDelegate , UITableViewD
         let userName = info.clientName
         let statusStr = "Approved"
         let urlStr = "https://chawtechsolutions.co.in/dev/apex/api/statusaccepted.php"
-        statusApiCall(statusStr: statusStr, couchId: couchId, userId: userId, urlStr: urlStr , userName: userName ?? "")
+        let toProfileImage = info.profileImage ?? ""
+        statusApiCall(statusStr: statusStr, couchId: couchId, userId: userId, urlStr: urlStr , userName: userName ?? "" ,toProfileImage: toProfileImage)
+      //  self.getAssignedCoachConversationId(toIdStr: userId, userNameStr: userName ?? "")
         //        self.tableView.reloadData()
         
     }
@@ -188,14 +210,14 @@ class CoachNotificationVC: UIViewController , UITableViewDelegate , UITableViewD
         
         let urlStr = "https://chawtechsolutions.co.in/dev/apex/api/statusrejected.php"
         
-        statusApiCall(statusStr: statusStr, couchId: couchId, userId: userId, urlStr: urlStr , userName: userName)
+        statusApiCall(statusStr: statusStr, couchId: couchId, userId: userId, urlStr: urlStr , userName: userName, toProfileImage: "")
         //          self.tableView.reloadData()
     }
     
-    func statusApiCall(statusStr: String, couchId: String , userId: String, urlStr: String , userName:String){
+    func statusApiCall(statusStr: String, couchId: String , userId: String, urlStr: String , userName:String,toProfileImage: String){
         //        let urlStr = "https://chawtechsolutions.co.in/dev/apex/api/statusaccepted.php"
         let parameters = ["coach_id": couchId , "user_id": userId , "status": statusStr]
-     
+        
         var urlRequest = URLRequest(url: URL(string: urlStr)!)
         urlRequest.httpMethod = "POST"
         do {
@@ -212,26 +234,33 @@ class CoachNotificationVC: UIViewController , UITableViewDelegate , UITableViewD
                 let jsonDecoder = JSONDecoder()
                 let response = response as! HTTPURLResponse
                 print(response.statusCode)
-                
                 let statusCode = response.statusCode
                 do {
                     let result = try jsonDecoder.decode(CoachAcceptResponse.self, from: data!)
                     print(result)
                     if result.status == "success"
                     {
-                        self.coachNotificationListApi()
-                        
-                        
+                        //                       timer
+                        //self.coachNotificationListApi()
                         if statusStr.lowercased() == "approved"
                         {
-                            self.getAssignedCoachConversationId(toIdStr: userId, userNameStr: userName)
+                            DispatchQueue.main.async {
+                                self.coachNotificationListApi()
+                            }
+                            self.getAssignedCoachConversationId(toIdStr: userId, userNameStr: userName, toProfileImage: toProfileImage)
+                        }
+                        else{
+                            DispatchQueue.main.async {
+                                self.makeToast("Client Request has been Rejected!")
+                                self.coachNotificationListApi()
+                            }
                         }
                         
                     }
                     //completion(.success(result))
                 } catch let error {
                     DispatchQueue.main.async {
-                       
+                        
                         self.makeToast("No Coach Found")
                         self.tableView.reloadData()
                     }
@@ -248,15 +277,15 @@ class CoachNotificationVC: UIViewController , UITableViewDelegate , UITableViewD
         }.resume()
     }
     
-    func getAssignedCoachConversationId(toIdStr:String,userNameStr:String){
+    func getAssignedCoachConversationId(toIdStr:String,userNameStr:String,toProfileImage:String){
 
-//        let userNameDict = [
-//            
-//            "userName"   :userNameStr]
+        let userName = UserDefaults.standard.getUserName()
+
         var userDic: [String:AnyObject] = [:]
+        var userDic2: [String:AnyObject] = [:]
 
         userDic = [
-            "name" : userNameStr,
+            "name" : userName,
         ] as [String : AnyObject]
         
         var metadataDic: [String:AnyObject] = [:]
@@ -264,48 +293,81 @@ class CoachNotificationVC: UIViewController , UITableViewDelegate , UITableViewD
             "user" : userDic
         ] as [String : AnyObject]
         
+        userDic2 = [
+            "name" : userNameStr,
+        ] as [String : AnyObject]
+        
+        var metadataDic2: [String:AnyObject] = [:]
+        metadataDic2 = [
+            "user" : userDic2
+        ] as [String : AnyObject]
+        
         let timestamp = Int(Date().timeIntervalSince1970*1000)
         let fromId = UserDefaults.standard.getUserID()
         let userImage = UserDefaults.standard.getProfileImg()
-        let userName = UserDefaults.standard.getUserName()
+        debugPrint(userImage)
         let request = Message(fromID: fromId, toID: toIdStr)
         
+        let location = NSUUID().uuidString.lowercased()
         let userDict = [
             "image": userImage ?? "",
             "lastMessage" : "",
-            "location"   : UIDevice.current.identifierForVendor!.uuidString ,
-            "time"  : timestamp,
+            "location"   : location ,
+            "time"  : "\(timestamp)",
+            "timestamp": "\(timestamp)",
             "metaData":metadataDic] as [String : Any]
+        
+        let userDict2 = [
+            "image": toProfileImage,
+            "lastMessage" : "",
+            "location"   : location ,
+            "time"  : "\(timestamp)",
+            "timestamp":"\(timestamp)",
+            "metaData":metadataDic2] as [String : Any]
         
         let newUserDict = [
             "email": "",
             "fcmKey": "",
             "userName": userName ?? "" ] as [String : Any]
+        
+         let newCoachDict = [
+            "email": "",
+            "fcmKey": "",
+            "userName": userNameStr] as [String : Any]
        
         print(userDict)
         print(newUserDict)
         
-        chatViewModel.getConversationId(request: request) { (conversationId) in
+        Database.database().reference().child("asignCoach").child("\(toIdStr)").updateChildValues(newCoachDict as [AnyHashable : Any])
+        
+        Database.database().reference().child("asignCoach").child("\(String(describing: toIdStr))").child("conversations").child("\(fromId!)").updateChildValues(userDict as [AnyHashable : Any])
+        
+        // Database.database().reference().child("asignCoach").child("\(String(describing: fromId!))").child("conversations").child("\(toIdStr)").updateChildValues(userDict as [AnyHashable : Any])
+        
+        Database.database().reference().child("users").child("\(toIdStr)").child("conversations").child("\(String(describing: fromId!))").updateChildValues(userDict as [AnyHashable : Any])
 
-            Database.database().reference().child("asignCoach").child("\(toIdStr)").child("conversations").child("\(String(describing: fromId!))").updateChildValues(userDict as [AnyHashable : Any])
-
-            Database.database().reference().child("asignCoach").child("\(toIdStr)").updateChildValues(newUserDict as [AnyHashable : Any])
-
-            Database.database().reference().child("users").child("\(toIdStr)").child("conversations").child("\(String(describing: fromId!))").updateChildValues(userDict as [AnyHashable : Any])
-
-            Database.database().reference().child("users").child("\(toIdStr)").updateChildValues(newUserDict as [AnyHashable : Any])
-
-            Database.database().reference().child("users").child("\(String(describing: fromId!))").child("conversations").child("\(toIdStr)").updateChildValues(userDict as [AnyHashable : Any])
-
-           // Database.database().reference().child("users").child("\(String(describing: fromId!))").updateChildValues(newUserDict as [AnyHashable : Any])
-
-
-
-        } onError: { (errorMesage) in
-            DispatchQueue.main.async {
-                //              showMessageAlert(message: errorMesage)k
-            }
-        }
+        
+        Database.database().reference().child("users").child("\(String(describing: fromId!))").child("conversations").child("\(toIdStr)").updateChildValues(userDict2 as [AnyHashable : Any])
+        
+//        chatViewModel.getConversationId(request: request) { (conversationId) in
+//
+//            Database.database().reference().child("asignCoach").child("\(toIdStr)").updateChildValues(newCoachDict as [AnyHashable : Any])
+//
+//            Database.database().reference().child("asignCoach").child("\(String(describing: toIdStr))").child("conversations").child("\(fromId!)").updateChildValues(userDict as [AnyHashable : Any])
+//
+//            // Database.database().reference().child("asignCoach").child("\(String(describing: fromId!))").child("conversations").child("\(toIdStr)").updateChildValues(userDict as [AnyHashable : Any])
+//
+//            Database.database().reference().child("users").child("\(toIdStr)").child("conversations").child("\(String(describing: fromId!))").updateChildValues(userDict as [AnyHashable : Any])
+//
+//
+//            Database.database().reference().child("users").child("\(String(describing: fromId!))").child("conversations").child("\(toIdStr)").updateChildValues(userDict2 as [AnyHashable : Any])
+//
+//
+//        } onError: { (errorMesage) in
+//            DispatchQueue.main.async {
+//                //              showMessageAlert(message: errorMesage)k
+//            }
+//        }
     }
     
     

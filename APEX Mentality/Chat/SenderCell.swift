@@ -27,16 +27,14 @@
 
 
 import UIKit
-
 class SenderCell: UITableViewCell {
-    
     var message: Message?{
         didSet{
             guard let message = self.message else { return }
             if message.timestamp != nil {
             let timeStamp = Date(timeIntervalSince1970: TimeInterval(message.timestamp!)! / 1000)
-            //self.lblTime.text = timeStamp.convertTimeInterval()
-           // self.lblDate.text = timeStamp.convertTimeInterval(format: "MMM d, yyyy")
+            self.lblTime.text = timeStamp.convertTimeInterval()
+            self.lblDate.text = timeStamp.convertTimeInterval(format: "MMM d, yyyy")
             }
             self.lblMessage.text = message.content
             

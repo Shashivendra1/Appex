@@ -140,7 +140,8 @@ extension IAPService: SKPaymentTransactionObserver {
                 break
             case .purchased:
                 print("Purchased on Date:- ", transaction.transactionDate!)
-                showSubscription = false
+                UserDefaults.standard.set("no", forKey: "showSubscription")
+                
                 let paymentDict:[AnyHashable:Any] = ["planId":self.planId,"planName":self.planName,"currentDate":self.currentDate,"validDate":self.validDate,"totalAmount":self.totalAmount]
 
          
@@ -149,7 +150,12 @@ extension IAPService: SKPaymentTransactionObserver {
                 if count == 1 {
                     receiptValidation()
                 }
-                
+//                DispatchQueue.main.async {
+//                    print("+++++++++++ subscription success")
+//                    UserDefaults.standard.set("no", forKey: "showSubscription")
+//
+//                    self.switchToTab()
+//                }
                 
 //                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
 //
@@ -190,10 +196,12 @@ extension IAPService: SKPaymentTransactionObserver {
             let task = session.dataTask(with: storeRequest, completionHandler: { [weak self] (data, response, error) in
                 
                 do {
-                    let UserId = UserDefaults.standard.getUserID()
+                    guard let UserId = UserDefaults.standard.getUserID() else {return}
+                    //let UserId = UserDefaults.standard.getUserID()
+                    
                     let apiCall = JsonApi()
                     let parameters = [
-                        "user_id": UserId!,
+                        "user_id": UserId,
                         "price": self!.totalAmount,
                         "status": "Confirm",
                         "plan_id": self!.planId,
@@ -209,12 +217,19 @@ extension IAPService: SKPaymentTransactionObserver {
                         if result["success"] as! String == "true"{
                             
                             DispatchQueue.main.async {
-                                self!.switchToTab(false)
+                                print("+++++++++++ subscription success")
+                                UserDefaults.standard.set("no", forKey: "showSubscription")
+
+                                self!.switchToTab()
                             }
                         }else{
-                            DispatchQueue.main.async {
-                                self!.switchToTab(true)
-                            }
+                           // UserDefaults.standard.set("yes", forKey: "showSubscription")
+                            print("+++++++++++ subscription failed")
+//                            DispatchQueue.main.async {
+//                                UserDefaults.standard.set("yes", forKey: "showSubscription")
+//
+//                                self!.switchToTab()
+//                            }
                         }
                     }
 
@@ -228,7 +243,7 @@ extension IAPService: SKPaymentTransactionObserver {
         }
     }
     
-    func switchToTab(_ showSubscription:Bool) {
+    func switchToTab() {
         let vc = TabBarViewController.instantiate(fromAppStoryboard: .main)
         
         if #available(iOS 13.0, *) {

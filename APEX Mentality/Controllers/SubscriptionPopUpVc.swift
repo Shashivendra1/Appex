@@ -153,7 +153,7 @@ class SubscriptionPopUpVc: UIViewController, UIGestureRecognizerDelegate  , SKPa
 //                    receiptValidation()
                 }
                 
-                subscriptionApi()
+//                subscriptionApi()
 //                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
 //                    if self.isSubscriptionPurchased == "monthly" || self.isSubscriptionPurchased == "annual" {
 //                        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "SubscriptionPurchased"), object: nil)

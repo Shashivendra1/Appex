@@ -18,10 +18,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate , SKPaymentTransactionObse
     
     var window:UIWindow?
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        Thread.sleep(forTimeInterval: 2)
+        
+       // Thread.sleep(forTimeInterval: 2)
 //    Glassfy.initialize(apiKey: "121d754d4cf34b8e8613082cb038606c")
         IAPService.shared.getProducts()
-        var userRole = UserDefaults.standard.getUserRole()
+     
 
         FirebaseApp.configure()
         Messaging.messaging().delegate = self
@@ -33,22 +34,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate , SKPaymentTransactionObse
           completionHandler: { _, _ in }
         )
         application.registerForRemoteNotifications()
-//        let userStatus = UserDefaults.standard.value(forKey: "LOGGED_IN") as! Bool
-//        if userStatus == true{
-//           switchToTab()
-        
-//        }
+
         userLoginType()
         IQKeyboardManager.shared().isEnabled = true
        
 //        IQKeyboardManager.shared().isEnableAutoToolbar = false
         IQKeyboardManager.shared().shouldResignOnTouchOutside = true
         IQKeyboardManager.shared().isEnableAutoToolbar = false
-        // In App Purchase get products here
-        
-//        IAPManager.shared.fetchAvailableProducts(showLoader: false)
-        
-//        SKPaymentQueue.default().add(self)
+
            return true
     }
 
@@ -59,7 +52,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate , SKPaymentTransactionObse
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
 }
     
-    func switchToTab() {
+    func switchToTab(){
         let vc = TabBarViewController.instantiate(fromAppStoryboard: .main)
         if #available(iOS 13.0, *) {
             UIApplication.shared.windows.first?.rootViewController = vc
@@ -126,6 +119,14 @@ extension AppDelegate: MessagingDelegate{
       )
     }
     
+    func switchToWelcomeVC() {
+        let userStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
+        let vc =  userStoryboard.instantiateViewController(withIdentifier: "WelcomeLoginScreen") as! WelcomeLoginScreen
+        let navVC = SwipeableNavigationController(rootViewController: vc)
+        navVC.setNavigationBarHidden(true, animated: false)
+        self.window?.rootViewController = navVC
+    }
+    
     func switchToLoginVC() {
         let userStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
         let vc =  userStoryboard.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
@@ -142,22 +143,34 @@ extension AppDelegate: MessagingDelegate{
         self.window?.rootViewController = navVC
     }
     
-//
-//    func switchToCoach(){
-//        let userStoryboard: UIStoryboard = UIStoryboard(name: "Main", bundle: nil)
-//        let vc =  userStoryboard.instantiateViewController(withIdentifier: "coachMessageVC") as! coachMessageVC
-//        vc.setNavigationBarHidden(true, animated: false)
-//        self.window?.rootViewController = vc
-//    }
-    
+
     func userLoginType(){
+     
         let userType = UserDefaults.standard.getUserRole()
         print(userType)
+        var showSubscription = UserDefaults.standard.value(forKey:"showSubscription")
+        
+        if showSubscription == nil {
+            UserDefaults.standard.set("yes", forKey:"showSubscription")
+            showSubscription = UserDefaults.standard.value(forKey:"showSubscription")
+
+        }
         
         if userType == "client" {
-            self.switchToTab()
+            
+//            IAPService.shared.getProducts()
+            
+            if showSubscription as! String == "no"{
+                self.switchToTab()
+            }else{
+                self.switchToTab()
+            }
         }else if userType == nil {
+            self.switchToWelcomeVC()
+            
+        } else if userType == "1" {
             self.switchToLoginVC()
+            
         } else{
             self.switchToHomeVC()
         }

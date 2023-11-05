@@ -19,8 +19,8 @@ class coachMessageCell: UITableViewCell {
           chatImage.layer.cornerRadius = chatImage.frame.size.height/2
           chatImage.clipsToBounds = true
           
-          cellView.cornerRadius = 25
-          cellView.layer.borderWidth = 3
+          cellView.cornerRadius = 12
+          cellView.layer.borderWidth = 2
           cellView.layer.borderColor = UIColor(red: 240/255, green: 234/255, blue: 242/255, alpha: 1).cgColor
         
     }

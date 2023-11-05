@@ -15,7 +15,7 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
     var clientListDict = [String:Any]()
     var clientPending = [clientPendingData]()
     var clientAccept = [clientAcceptData]()
-
+    
     var clientReject = [clientRejectData]()
     var clientRejectDict = [String:Any]()
     
@@ -25,7 +25,7 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.separatorStyle = .none
-//        clientAcceptApi()
+        //        clientAcceptApi()
         segmentOutlet.layer.cornerRadius = 10
         segmentOutlet.layer.masksToBounds = true
         self.tabBarController?.tabBar.isHidden = true
@@ -33,7 +33,7 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
     
     override func viewWillAppear(_ animated: Bool) {
         self.tabBarController?.tabBar.isHidden = true
-     clientAcceptApi()
+        clientAcceptApi()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -46,7 +46,7 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
             return clientAccept.count
             
         }else if indexValue == 1 {
-           
+            
             return clientReject.count
             
         } else if indexValue == 2 {
@@ -54,21 +54,7 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
             return clientPending.count
         }
         return 0
-//        var value = 0
-//        switch segmentOutlet.selectedSegmentIndex{
-//        case 0 :
-//
-//            return clientAccept.count
-//        case 1:
-//
-//            return clientReject.count
-//        case 2:
-//
-//            return clientPending.count
-//        default:
-//            break
-//        }
-//        return value
+
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -83,16 +69,16 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
                         if let imageData = try? Data(contentsOf: imageURL) {
                             let image = UIImage(data: imageData)
                             DispatchQueue.main.async {
-                            cell.profileImg.image = image
+                                cell.profileImg.image = image
                             }
                         }
                     }
                 }
-
                 
                 
                 
-//                cell.profileImg.kf.setImage(with: URL(string:acceptInfo.profilePic))
+                
+                //                cell.profileImg.kf.setImage(with: URL(string:acceptInfo.profilePic))
                 cell.setNeedsLayout()
             }
             print(acceptInfo)
@@ -101,22 +87,22 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
             cell.cellView.backgroundColor = UIColor(red: 237/255, green: 247/255, blue: 237/255, alpha: 1)
             
             return cell
-
+            
         }else if indexValue == 1 {
             let RejectInfo = self.clientReject[indexPath.row]
             if RejectInfo.profilePic != "" {
-            DispatchQueue.global().async {
-            if let imageURL = URL(string: RejectInfo.profilePic) {
-                if let imageData = try? Data(contentsOf: imageURL) {
-                let image = UIImage(data: imageData)
-                    DispatchQueue.main.async {
-                    cell.profileImg.image = image
+                DispatchQueue.global().async {
+                    if let imageURL = URL(string: RejectInfo.profilePic) {
+                        if let imageData = try? Data(contentsOf: imageURL) {
+                            let image = UIImage(data: imageData)
+                            DispatchQueue.main.async {
+                                cell.profileImg.image = image
                             }
                         }
                     }
                 }
                 
-//                cell.profileImg.kf.setImage(with: URL(string:RejectInfo.profilePic))
+                //                cell.profileImg.kf.setImage(with: URL(string:RejectInfo.profilePic))
                 cell.setNeedsLayout()
             }
             cell.nameLbl.text = RejectInfo.coachName
@@ -138,7 +124,7 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
                     }
                 }
                 
-//                cell.profileImg.kf.setImage(with: URL(string:pendingInfo.profilePic))
+                //                cell.profileImg.kf.setImage(with: URL(string:pendingInfo.profilePic))
                 cell.setNeedsLayout()
             }
             
@@ -149,46 +135,8 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
             return cell
             
         }
-         return UITableViewCell()
-            
-//        switch segmentOutlet.selectedSegmentIndex{
-//        case 0:
-//            let acceptInfo = self.clientAccept[indexPath.row]
-//            if acceptInfo.profilePic != "" {
-//                cell.profileImg.kf.setImage(with: URL(string:acceptInfo.profilePic))
-//                cell.setNeedsLayout()
-//            }
-//            print(acceptInfo)
-//            cell.nameLbl.text = acceptInfo.coachName
-//            cell.messageLbl.text = acceptInfo.requestStatus
-//            cell.cellView.backgroundColor = UIColor(red: 225/255, green: 248/255, blue: 236/255, alpha: 1)
-//            break
-//        case 1 :
-//            let RejectInfo = self.clientReject[indexPath.row]
-//            if RejectInfo.profilePic != "" {
-//                cell.profileImg.kf.setImage(with: URL(string:RejectInfo.profilePic))
-//                cell.setNeedsLayout()
-//            }
-//            cell.nameLbl.text = RejectInfo.coachName
-//            cell.messageLbl.text = RejectInfo.requestStatus
-//            cell.cellView.backgroundColor = UIColor(red: 250/255, green: 217/255, blue: 217/255, alpha: 1)
-//            print(RejectInfo)
-//            break
-//        case 2 :
-//            let pendingInfo = self.clientPending[indexPath.row]
-//            if pendingInfo.profilePic != "" {
-//                cell.profileImg.kf.setImage(with: URL(string:pendingInfo.profilePic))
-//                cell.setNeedsLayout()
-//            }
-//
-//            cell.cellView.backgroundColor = UIColor(red: 255/255, green: 237/255, blue: 219/255, alpha: 1  )
-//            cell.nameLbl.text = pendingInfo.coachName
-//            cell.messageLbl.text = pendingInfo.requestStatus
-//            print(pendingInfo)
-//        default:
-//            break
-//        }
-      //  return cell
+        return UITableViewCell()
+  
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -224,20 +172,23 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
         default:
             break
         }
-//        DispatchQueue.main.async {
-//       self.tableView.reloadData()
-//        }
-       
+        //        DispatchQueue.main.async {
+        //       self.tableView.reloadData()
+        //        }
+        
     }
     
     @IBAction func onClickBack(_ sender: Any) {
-    self.navigationController?.popViewController(animated: true)
+        self.navigationController?.popViewController(animated: true)
     }
     
     //  ClientacceptNotificationApi
     
     func clientAcceptApi()
     {
+        DispatchQueue.main.async {
+            self.showLoader()
+        }
         let userId =    UserDefaults.standard.getUserID()
         let urlStr = "https://chawtechsolutions.co.in/dev/apex/api/client_approved_status.php"
         let parameters = ["user_id": userId]
@@ -250,8 +201,8 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
         }
         urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.addValue("application/json", forHTTPHeaderField: "Accept")
-        showLoading()
-
+        
+        
         URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
             if error == nil && data != nil && data?.count != 0{
                 print(String(data: data!, encoding: .utf8)!)
@@ -267,32 +218,39 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
                     
                     if result.success == "true"
                     {
-                        hideLoading()
-
+                        
                         self.clientAccept = result.data ?? []
                         print(self.clientListDict.count)
                         DispatchQueue.main.async {
+                            self.hideLoader()
                             self.tableView.reloadData()
                         }
                         
                     }
                     else
                     {
-                        hideLoading()
+                        
                         DispatchQueue.main.async {
+                            self.hideLoader()
                             self.makeToast("Nothing to found any requests accepted by coach")
                             self.tableView.reloadData()
-
+                            
                         }
                     }
-                 
+                    
                     //completion(.success(result))
                 } catch let error {
-                    hideLoading()
+                    DispatchQueue.main.async {
+                        self.hideLoader()
+                    }
+                    //                    hideLoading()
                     //completion(.failure(error))
                 }
             }else{
-                hideLoading()
+                
+                DispatchQueue.main.async {
+                    self.hideLoader()
+                }
                 let error = error as NSError?
                 self.makeToast("Nothing to found any requests accepted by coach")
             }
@@ -300,8 +258,11 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
     }
     
     //   ClientRejectNotificationApi
-        func clientRejectApi()
-        {
+    func clientRejectApi()
+    {
+        DispatchQueue.main.async {
+            self.showLoader()
+        }
         let userId =    UserDefaults.standard.getUserID()
         let urlStr = "https://chawtechsolutions.co.in/dev/apex/api/client_rejected_status.php"
         let parameters = ["user_id": userId]
@@ -331,24 +292,26 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
                     if result.success == "true"
                     {
                         
-                  
                         self.clientReject = result.data ?? []
                         print(self.clientRejectDict.count)
                         DispatchQueue.main.async {
+                            self.hideLoader()
+                            
                             self.tableView.reloadData()
                         }
-
-                      
+                        
+                        
                     }
                     else{
                         DispatchQueue.main.async {
+                            self.hideLoader()
                             self.makeToast("Nothing to found any request is Rejected by coach.")
                             self.tableView.reloadData()
-
+                            
                         }
                         
                     }
-
+                    
                     //completion(.success(result))
                 } catch let error {
                     //completion(.failure(error))
@@ -366,6 +329,9 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
     
     func clientPendingApi()
     {
+        DispatchQueue.main.async {
+            self.showLoader()
+        }
         let userId =    UserDefaults.standard.getUserID()
         let urlStr = "https://chawtechsolutions.co.in/dev/apex/api/client_pending_status.php"
         let parameters = ["user_id": userId]
@@ -395,23 +361,25 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
                     
                     if result.success == "true"
                     {
-
+                       
                         self.clientPending = result.data ?? []
                         print(self.clientPendingDict.count)
                         DispatchQueue.main.async {
+                            self.hideLoader()
                             self.tableView.reloadData()
                         }
-
+                        
                         
                     }
                     else{
                         DispatchQueue.main.async {
-                    self.makeToast("Nothing to found any request is Pending by coach.")
+                            self.hideLoader()
+                            self.makeToast("Nothing to found any request is Pending by coach.")
                             self.tableView.reloadData()
-
+                            
                         }
                     }
-
+                    
                     
                     //completion(.success(result))
                 } catch let error {
@@ -420,10 +388,16 @@ class NotificationVC: UIViewController , UITableViewDelegate , UITableViewDataSo
             }else{
                 let error = error as NSError?
             }
-            
         }.resume()
     }
     
-    
+    func showLoader() {
+        let hud = MBProgressHUD.showAdded(to: self.view, animated: true)
+        hud.label.text = "Loading..."
+    }
+    // Hide the loader
+    func hideLoader() {
+        MBProgressHUD.hide(for: self.view, animated: true)
+    }
     
 }

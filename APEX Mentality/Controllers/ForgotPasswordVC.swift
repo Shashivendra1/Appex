@@ -7,6 +7,8 @@
 
 import UIKit
 import FLAnimatedImage
+
+
 class ForgotPasswordVC: UIViewController {
     @IBOutlet weak var sendBtn: UIButton!
     
@@ -49,6 +51,7 @@ class ForgotPasswordVC: UIViewController {
                 DispatchQueue.main.async {
                     hideLoading()
         self.emailTxt.text = ""
+                    self.navigationController?.popViewController(animated: true)
 //        let vc = self.storyboard?.instantiateViewController(withIdentifier: "OtpVC") as! OtpVC
 //    self.navigationController?.pushViewController(vc, animated: true)
                     
@@ -72,8 +75,11 @@ class ForgotPasswordVC: UIViewController {
     }
     
     @IBAction func onClickBackToLogin(_ sender: Any) {
-   let vc = self.storyboard?.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
- self.navigationController?.pushViewController(vc, animated: true)
+        
+        self.navigationController?.popViewController(animated: true)
+        
+//   let vc = self.storyboard?.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
+// self.navigationController?.pushViewController(vc, animated: true)
 }
     
     @IBAction func onClickBack(_ sender: Any) {

@@ -118,7 +118,12 @@ class SubscriptionVC: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-   self.tabBarController?.tabBar.isHidden = false
+        self.makeToast("You don't have any plan")
+        self.tabBarController?.tabBar.isHidden = false
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        self.tabBarController?.tabBar.isHidden = true
     }
     
     @IBAction func onClickBack(_ sender: Any) {

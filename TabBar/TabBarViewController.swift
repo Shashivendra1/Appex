@@ -6,6 +6,7 @@ class TabBarViewController: UITabBarController {
     var homeBtn : UITabBarItem!
     var bookNowBtn : UITabBarItem!
     var contactBtn : UITabBarItem!
+    var showSubscription : Bool!
     
     // private var customHeight: CGFloat = 300
     
@@ -57,8 +58,8 @@ class TabBarViewController: UITabBarController {
           let shape = CAShapeLayer()
           shape.path = path.cgPath
           shape.lineWidth = 3
-          shape.strokeColor = UIColor.yellow.cgColor//UIColor.white.cgColor
-          shape.fillColor = UIColor.yellow.cgColor//UIColor.white.cgColor
+          shape.strokeColor = UIColor(hex: "#FAD232", alpha: 1.0)!.cgColor// FAD232
+          shape.fillColor = UIColor(hex: "#FAD232", alpha: 1.0)!.cgColor//UIColor.white.cgColor
           self.tabBar.layer.insertSublayer(shape, at: 0)
           self.tabBar.itemWidth = 40
           self.tabBar.itemPositioning = .centered
@@ -97,8 +98,17 @@ class TabBarViewController: UITabBarController {
         setUpTabBarElements()
         
         //MARK: set controller  in tabbar button
+       // /*
         var VC1 = UIViewController()
         var nav1 = UINavigationController()
+        
+        var showSubscriptionValue = UserDefaults.standard.value(forKey:"showSubscription")
+        
+        if showSubscriptionValue as! String == "no"{
+           showSubscription = false
+        }else{
+            showSubscription = true
+        }
         if showSubscription {
              //  VC1 = CoachesRequestVC.instantiate(fromAppStoryboard: .main)
              VC1 = SubscriptionVC.instantiate(fromAppStoryboard: .main)
@@ -110,7 +120,12 @@ class TabBarViewController: UITabBarController {
             nav1.isNavigationBarHidden = true
         }
         
-        
+        //*/
+        /*
+        let VC1 = CoachesRequestVC.instantiate(fromAppStoryboard: .main)
+        let nav1 = SwipeableNavigationController(rootViewController: VC1)
+        nav1.isNavigationBarHidden = true
+        */
         let VC2 = ChatVC.instantiate(fromAppStoryboard: .main)
         let nav2 = SwipeableNavigationController(rootViewController: VC2)
         nav2.isNavigationBarHidden = true
@@ -138,7 +153,8 @@ class TabBarViewController: UITabBarController {
         self.contactBtn.imageInsets = UIEdgeInsets(top:15, left:0, bottom: 0, right: 0)
         
         self.homeBtn.image     = UIImage(named: "chat")?.withRenderingMode(.alwaysOriginal)
-        self.bookNowBtn.image   = UIImage(named: "Group_34408")?.withRenderingMode(.alwaysOriginal)
+       // self.bookNowBtn.image   = UIImage(named: "Group_34408")?.withRenderingMode(.alwaysOriginal)
+        self.bookNowBtn.image   = UIImage(named: "tabhomeBtn")?.withRenderingMode(.alwaysOriginal)
         self.contactBtn.image   = UIImage(named: "profile")?.withRenderingMode(.alwaysOriginal)
         self.homeBtn.selectedImage      = UIImage(named: "ChatClickable")?.withRenderingMode(.alwaysOriginal)
         //self.bookNowBtn.selectedImage   = UIImage(named: "Group 34406")?.withRenderingMode(.alwaysOriginal)
